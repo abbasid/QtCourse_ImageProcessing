@@ -21,5 +21,5 @@ void MainWindow::on_actionLoad_image_triggered()
 
 QImage MainWindow::Mat2QImage(const cv::Mat src)
 {
-
+    return QImage();
 }
