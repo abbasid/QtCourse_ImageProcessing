@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QString>
 #include <QImage>
+#include <QDebug>
 
 namespace Ui {
 class MainWindow;
@@ -24,7 +25,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QImage Mat2QImage(const cv::Mat src);
+    cv::Mat img;
+    QImage Mat2QImage(const cv::Mat &src);
+    void showImage(const cv::Mat &src);
 };
 
 #endif // MAINWINDOW_H
