@@ -12,3 +12,14 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::on_actionLoad_image_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName();
+    cv::Mat src = cv::imread(fileName.toStdString());
+}
+
+QImage MainWindow::Mat2QImage(const cv::Mat src)
+{
+
+}
