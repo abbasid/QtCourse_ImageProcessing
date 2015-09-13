@@ -2,11 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <opencv.hpp>
 #include <QFileDialog>
 #include <QString>
 #include <QImage>
 #include <QDebug>
+#include <opencv.hpp>
+
+
 
 namespace Ui {
 class MainWindow;
@@ -22,6 +24,8 @@ public:
 
 private slots:
     void on_actionLoad_image_triggered();
+
+    void on_brightness_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;

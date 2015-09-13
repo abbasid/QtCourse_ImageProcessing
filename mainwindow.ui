@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>979</width>
-    <height>420</height>
+    <width>975</width>
+    <height>430</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,6 +35,12 @@
       <width>160</width>
       <height>22</height>
      </rect>
+    </property>
+    <property name="minimum">
+     <number>-128</number>
+    </property>
+    <property name="maximum">
+     <number>127</number>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -229,8 +235,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>979</width>
-     <height>21</height>
+     <width>975</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

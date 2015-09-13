@@ -17,10 +17,6 @@ void MainWindow::on_actionLoad_image_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName();
     cv::Mat src = cv::imread(fileName.toStdString());
-
-    int width = src.cols;
-    int height = src.rows;
-    cv::resize(src, src, cv::Size(width/4, height/4));
     this->img = src.clone();
     this->showImage(img);
 }
@@ -65,4 +61,26 @@ void MainWindow::showImage(const cv::Mat &src)
     else
         cv::resize(src, dst, cv::Size(src.cols/(src.rows/height), height));
     ui->show_Img->setPixmap(QPixmap::fromImage(this->Mat2QImage(dst)));
+}
+
+void MainWindow::on_brightness_valueChanged(int value)
+{
+    cv::Mat tmp;
+    tmp = this->img.clone();
+    for(int i = 0; i < this->img.rows; i++)
+    {
+        for(int j = 0; j < this->img.cols; j++)
+        {
+            for(int k = 0; k < this->img.channels(); k++)
+            {
+                if(this->img.at<cv::Vec3b>(i, j)[k] + value > 255)
+                    tmp.at<cv::Vec3b>(i, j)[k] = 255;
+                else if(this->img.at<cv::Vec3b>(i, j)[k] + value < 0)
+                    tmp.at<cv::Vec3b>(i, j)[k] = 0;
+                else
+                    tmp.at<cv::Vec3b>(i, j)[k] = this->img.at<cv::Vec3b>(i, j)[k] + value;
+            }
+        }
+    }
+    this->showImage(tmp);
 }

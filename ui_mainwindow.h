@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.4.0
+** Created by: Qt User Interface Compiler version 5.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -53,7 +53,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(979, 420);
+        MainWindow->resize(975, 430);
         actionLoad_image = new QAction(MainWindow);
         actionLoad_image->setObjectName(QStringLiteral("actionLoad_image"));
         centralWidget = new QWidget(MainWindow);
@@ -64,6 +64,8 @@ public:
         brightness = new QSlider(centralWidget);
         brightness->setObjectName(QStringLiteral("brightness"));
         brightness->setGeometry(QRect(650, 70, 160, 22));
+        brightness->setMinimum(-128);
+        brightness->setMaximum(127);
         brightness->setOrientation(Qt::Horizontal);
         red = new QSlider(centralWidget);
         red->setObjectName(QStringLiteral("red"));
@@ -114,7 +116,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 979, 21));
+        menuBar->setGeometry(QRect(0, 0, 975, 24));
         menu = new QMenu(menuBar);
         menu->setObjectName(QStringLiteral("menu"));
         MainWindow->setMenuBar(menuBar);

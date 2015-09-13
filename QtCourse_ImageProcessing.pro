@@ -17,15 +17,15 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h
 
-INCLUDEPATH += C:\\Qt\\opencv_v3.0_x86\\include    \
-                C:\\Qt\\opencv_v3.0_x86\\include\\opencv    \
-                C:\\Qt\\opencv_v3.0_x86\\include\\opencv2   \
+INCLUDEPATH += C:\\opencv_v3.0\\x64\\include    \
+                C:\\opencv_v3.0\\x64\\include\\opencv    \
+                C:\\opencv_v3.0\\x64\\include\\opencv2   \
 
 #debug libs
-LIBS += C:\\Qt\\opencv_v3.0_x86\\lib\\opencv_world300.lib \
-        C:\\Qt\\opencv_v3.0_x86\\lib\\opencv_ts300.lib  \
+LIBS += C:\\opencv_v3.0\\x64\\lib\\opencv_world300.lib \
+        C:\\opencv_v3.0\\x64\\lib\\opencv_ts300.lib  \
 #release libs
-        C:\\Qt\\opencv_v3.0_x86\\lib\\opencv_world300d.lib \
-        C:\\Qt\\opencv_v3.0_x86\\lib\\opencv_ts300d.lib
+        C:\\opencv_v3.0\\x64\\lib\\opencv_world300d.lib \
+        C:\\opencv_v3.0\\x64\\lib\\opencv_ts300d.lib
 
 FORMS    += mainwindow.ui
