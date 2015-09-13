@@ -46,6 +46,9 @@ private:
     QImage Mat2QImage(const cv::Mat &src);
     void showImage(const cv::Mat &src);
     void changeColorTemp(cv::Mat &src, cv::Mat &tmp, QVector<int> color);
+    cv::Mat tmp;
+    cv::Mat tmp_1Ch;
+    bool grayscaleisclicked;
 
 };
 

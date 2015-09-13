@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    grayscaleisclicked = false;
 }
 
 MainWindow::~MainWindow()
@@ -19,6 +20,8 @@ void MainWindow::on_actionLoad_image_triggered()
     cv::Mat src = cv::imread(fileName.toStdString());
     this->img = src.clone();
     this->showImage(img);
+    this->tmp = this->img.clone();
+    tmp_1Ch.create(cv::Size(tmp.cols,tmp.rows), CV_8UC1);
 }
 
 QImage MainWindow::Mat2QImage(const cv::Mat &src)
@@ -146,7 +149,6 @@ void MainWindow::on_blue_valueChanged(int value)
 
 void MainWindow::on_grayscale_clicked()
 {
-    cv::Mat tmp = this->img.clone();
     cv:: Mat dst;
     dst.create(cv::Size(tmp.cols, tmp.rows), CV_8UC1);
     for(int i = 0; i < this->img.rows; i++)
@@ -157,30 +159,58 @@ void MainWindow::on_grayscale_clicked()
         }
     }
     this->showImage(dst);
+    grayscaleisclicked = true;
 }
 
 void MainWindow::on_blur_clicked()
 {
-    cv::Mat tmp = this->img;
-    cv::Mat dst(tmp);
-    //dst.create(cv::Size(tmp.cols, tmp.rows), CV_8UC3);
-    for(int i = 0; i < tmp.rows -2; i++)
+    if(grayscaleisclicked == false)
     {
-        for(int j = 0; j < tmp.cols -2; j++)
+        cv::Mat dst(tmp);
+
+        for(int i = 0; i < tmp.rows -2; i++)
         {
-            for(int k = 0; k < tmp.channels(); k++)
+            for(int j = 0; j < tmp.cols -2; j++)
             {
-                dst.at<cv::Vec3b>(i + 1, j + 1)[k] = (tmp.at<cv::Vec3b>(i, j)[k] +
-                                                      tmp.at<cv::Vec3b>(i, j + 1)[k] +
-                                                       tmp.at<cv::Vec3b>(i, j + 2)[k] +
-                                                        tmp.at<cv::Vec3b>(i + 1, j)[k] +
-                                                        tmp.at<cv::Vec3b>(i + 1, j + 1)[k] +
-                                                        tmp.at<cv::Vec3b>(i + 1, j + 2)[k] +
-                                                        tmp.at<cv::Vec3b>(i + 2, j)[k] +
-                                                        tmp.at<cv::Vec3b>(i + 2, j + 1)[k] +
-                                                        tmp.at<cv::Vec3b>(i +2, j + 2)[k])/9;
+                for(int k = 0; k < tmp.channels(); k++)
+                {
+                    dst.at<cv::Vec3b>(i + 1, j + 1)[k] = (tmp.at<cv::Vec3b>(i, j)[k] +
+                                                          tmp.at<cv::Vec3b>(i, j + 1)[k] +
+                                                          tmp.at<cv::Vec3b>(i, j + 2)[k] +
+                                                          tmp.at<cv::Vec3b>(i + 1, j)[k] +
+                                                          tmp.at<cv::Vec3b>(i + 1, j + 1)[k] +
+                                                          tmp.at<cv::Vec3b>(i + 1, j + 2)[k] +
+                                                          tmp.at<cv::Vec3b>(i + 2, j)[k] +
+                                                          tmp.at<cv::Vec3b>(i + 2, j + 1)[k] +
+                                                          tmp.at<cv::Vec3b>(i +2, j + 2)[k])/9;
+                }
             }
         }
+        this->showImage(dst);
     }
-    this->showImage(dst);
+    else
+    {
+        cv::Mat dst(tmp_1Ch);
+        for(int i = 0; i < tmp_1Ch.rows -2; i++)
+        {
+            for(int j = 0; j < tmp_1Ch.cols -2; j++)
+            {
+                tmp_1Ch.at<uchar>(i, j) = (tmp.at<cv::Vec3b>(i, j)[0] + tmp.at<cv::Vec3b>(i, j)[1] +　tmp.at<cv::Vec3b>(i, j)[2])/3;
+                for(int k = 0; k < tmp.channels(); k++)
+                {
+                    dst.at<uchar>(i + 1, j + 1) = (tmp_1Ch.at<uchar>(i, j) +
+                                                   tmp_1Ch.at<uchar>(i, j + 1) +
+                                                   tmp_1Ch.at<uchar>(i, j + 2) +
+                                                   tmp_1Ch.at<uchar>(i + 1, j) +
+                                                   tmp_1Ch.at<uchar>(i + 1, j + 1) +
+                                                   tmp_1Ch.at<uchar>(i + 1, j + 2) +
+                                                   tmp_1Ch.at<uchar>(i + 2, j) +
+                                                   tmp_1Ch.at<uchar>(i + 2, j + 1) +
+                                                   tmp_1Ch.at<uchar>(i +2, j + 2))/9;
+                }
+            }
+        }
+        this->showImage(dst);
+    }
+
 }
