@@ -6,7 +6,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    grayscaleisclicked = false;
+    saveImageOrNot = true;
+    clock = new QTimer;
+    clock->setInterval(1000);
+    connect(clock, SIGNAL(timeout()), this, SLOT(save_image()));
 }
 
 MainWindow::~MainWindow()
@@ -20,8 +23,8 @@ void MainWindow::on_actionLoad_image_triggered()
     cv::Mat src = cv::imread(fileName.toStdString());
     this->img = src.clone();
     this->showImage(img);
-    this->tmp = this->img.clone();
-    tmp_1Ch.create(cv::Size(tmp.cols,tmp.rows), CV_8UC1);
+    this->real_time_img = this->img.clone();
+    clock->start();
 }
 
 QImage MainWindow::Mat2QImage(const cv::Mat &src)
@@ -80,7 +83,6 @@ void MainWindow::changeColorTemp(cv::Mat &src, cv::Mat &tmp, QVector<int> color)
                     tmp.at<cv::Vec3b>(i, j)[k] = 0;
                 else
                     tmp.at<cv::Vec3b>(i, j)[k] = src.at<cv::Vec3b>(i, j)[k] + color[k];
-
             }
         }
     }
@@ -88,37 +90,42 @@ void MainWindow::changeColorTemp(cv::Mat &src, cv::Mat &tmp, QVector<int> color)
 
 void MainWindow::on_brightness_valueChanged(int value)
 {
-    cv::Mat tmp;
-    tmp = this->img.clone();
     for(int i = 0; i < this->img.rows; i++)
     {
         for(int j = 0; j < this->img.cols; j++)
         {
             for(int k = 0; k < this->img.channels(); k++)
             {
-                if(this->img.at<cv::Vec3b>(i, j)[k] + value > 255)
-                    tmp.at<cv::Vec3b>(i, j)[k] = 255;
-                else if(this->img.at<cv::Vec3b>(i, j)[k] + value < 0)
-                    tmp.at<cv::Vec3b>(i, j)[k] = 0;
+                if(this->real_time_img.at<cv::Vec3b>(i, j)[k] + value > 255)
+                    this->real_time_img.at<cv::Vec3b>(i, j)[k] = 255;
+                else if(this->real_time_img.at<cv::Vec3b>(i, j)[k] + value < 0)
+                    this->real_time_img.at<cv::Vec3b>(i, j)[k] = 0;
                 else
-                    tmp.at<cv::Vec3b>(i, j)[k] = this->img.at<cv::Vec3b>(i, j)[k] + value;
+                    this->real_time_img.at<cv::Vec3b>(i, j)[k] = this->tmp.at<cv::Vec3b>(i, j)[k] + value;
             }
         }
     }
-    this->showImage(tmp);
+    this->showImage(this->real_time_img);
+    this->saveImageOrNot = false;
+    this->realTimechanged = true;
+    this->graychanged = false;
+    this->constrastChanged = false;
+    this->invertChanged = false;
 }
 
 void MainWindow::on_red_valueChanged(int value)
 {
-    cv::Mat tmp;
-    tmp = this->img.clone();
     QVector<int> colorTemp;
     colorTemp.push_back(ui->blue->value());
     colorTemp.push_back(ui->green->value());
     colorTemp.push_back(ui->red->value());
-    this->changeColorTemp(this->img, tmp, colorTemp);
-    this->showImage(tmp);
-
+    this->changeColorTemp(this->tmp, this->real_time_img, colorTemp);
+    this->showImage(this->real_time_img);
+    this->saveImageOrNot = false;
+    this->realTimechanged = true;
+    this->graychanged = false;
+    this->constrastChanged = false;
+    this->invertChanged = false;
 }
 
 
@@ -130,87 +137,151 @@ void MainWindow::on_green_valueChanged(int value)
     colorTemp.push_back(ui->blue->value());
     colorTemp.push_back(ui->green->value());
     colorTemp.push_back(ui->red->value());
-    this->changeColorTemp(this->img, tmp, colorTemp);
-    this->showImage(tmp);
-
+    this->changeColorTemp(this->tmp, this->real_time_img, colorTemp);
+    this->showImage(real_time_img);
+    this->saveImageOrNot = false;
+    this->realTimechanged = true;
+    this->graychanged = false;
+    this->constrastChanged = false;
+    this->invertChanged = false;
 }
 
 void MainWindow::on_blue_valueChanged(int value)
 {
-    cv::Mat tmp;
-    tmp = this->img.clone();
     QVector<int> colorTemp;
     colorTemp.push_back(ui->blue->value());
     colorTemp.push_back(ui->green->value());
     colorTemp.push_back(ui->red->value());
-    this->changeColorTemp(this->img, tmp, colorTemp);
+    this->changeColorTemp(this->tmp, this->real_time_img, colorTemp);
     this->showImage(tmp);
+    this->saveImageOrNot = false;
+    this->realTimechanged = true;
+    this->graychanged = false;
+    this->constrastChanged = false;
+    this->invertChanged = false;
 }
 
 void MainWindow::on_grayscale_clicked()
 {
     cv:: Mat dst;
-    dst.create(cv::Size(tmp.cols, tmp.rows), CV_8UC1);
+    dst.create(cv::Size(real_time_img.cols, real_time_img.rows), CV_8UC1);
     for(int i = 0; i < this->img.rows; i++)
     {
         for(int j = 0; j < this->img.cols; j++)
         {
-            dst.at<uchar>(i,j) = (tmp.at<cv::Vec3b>(i, j)[0] + tmp.at<cv::Vec3b>(i, j)[1] + tmp.at<cv::Vec3b>(i, j)[2])/3;
+            dst.at<uchar>(i,j) = (this->real_time_img.at<cv::Vec3b>(i, j)[0] + this->real_time_img.at<cv::Vec3b>(i, j)[1] + this->real_time_img.at<cv::Vec3b>(i, j)[2])/3;
         }
     }
+    this->realTimechanged = false;
+    this->graychanged = true;
+    this->constrastChanged = false;
+    this->invertChanged = false;
+    this->imgGray = dst.clone();
     this->showImage(dst);
-    grayscaleisclicked = true;
 }
 
 void MainWindow::on_blur_clicked()
 {
-    if(grayscaleisclicked == false)
-    {
-        cv::Mat dst(tmp);
 
-        for(int i = 0; i < tmp.rows -2; i++)
+    cv::Mat dst(this->real_time_img);
+
+    for(int i = 0; i < this->real_time_img.rows -2; i++)
+    {
+        for(int j = 0; j < this->real_time_img.cols -2; j++)
         {
-            for(int j = 0; j < tmp.cols -2; j++)
+            for(int k = 0; k < this->real_time_img.channels(); k++)
             {
-                for(int k = 0; k < tmp.channels(); k++)
-                {
-                    dst.at<cv::Vec3b>(i + 1, j + 1)[k] = (tmp.at<cv::Vec3b>(i, j)[k] +
-                                                          tmp.at<cv::Vec3b>(i, j + 1)[k] +
-                                                          tmp.at<cv::Vec3b>(i, j + 2)[k] +
-                                                          tmp.at<cv::Vec3b>(i + 1, j)[k] +
-                                                          tmp.at<cv::Vec3b>(i + 1, j + 1)[k] +
-                                                          tmp.at<cv::Vec3b>(i + 1, j + 2)[k] +
-                                                          tmp.at<cv::Vec3b>(i + 2, j)[k] +
-                                                          tmp.at<cv::Vec3b>(i + 2, j + 1)[k] +
-                                                          tmp.at<cv::Vec3b>(i +2, j + 2)[k])/9;
-                }
+                dst.at<cv::Vec3b>(i + 1, j + 1)[k] = (this->real_time_img.at<cv::Vec3b>(i, j)[k] +
+                                                      this->real_time_img.at<cv::Vec3b>(i, j + 1)[k] +
+                                                      this->real_time_img.at<cv::Vec3b>(i, j + 2)[k] +
+                                                      this->real_time_img.at<cv::Vec3b>(i + 1, j)[k] +
+                                                      this->real_time_img.at<cv::Vec3b>(i + 1, j + 1)[k] +
+                                                      this->real_time_img.at<cv::Vec3b>(i + 1, j + 2)[k] +
+                                                      this->real_time_img.at<cv::Vec3b>(i + 2, j)[k] +
+                                                      this->real_time_img.at<cv::Vec3b>(i + 2, j + 1)[k] +
+                                                      this->real_time_img.at<cv::Vec3b>(i +2, j + 2)[k])/9;
             }
         }
-        this->showImage(dst);
+    }
+    this->showImage(dst);
+
+
+}
+
+
+
+void MainWindow::on_contrast_valueChanged(int value)
+{
+    double sharp = (double)value/1000;
+    this->img_Constrat = this->imgGray.clone();
+    for(int i = 0; i < this->img_Constrat.rows; i++)
+    {
+        for(int j = 0; j < this->img_Constrat.cols; j++)
+        {
+            if(imgGray.at<uchar>(i, j) < 0)
+                this->img_Constrat.at<uchar>(i, j) = 0;
+            else if(imgGray.at<uchar>(i, j) > 255)
+                this->img_Constrat.at<uchar>(i, j) = 255;
+            else
+            {
+                this->img_Constrat.at<uchar>(i, j) = (int)(imgGray.at<uchar>(i, j) * sharp);
+            }
+        }
+    }
+    this->realTimechanged = false;
+    this->graychanged = false;
+    this->constrastChanged = true;
+    this->invertChanged = false;
+    this->showImage(this->img_Constrat);
+}
+
+void MainWindow::on_invert_clicked()
+{
+    this->img_invert.create(cv::Size(this->img.cols, this->img.rows), CV_8UC3);
+    for(int i = 0; i < this->img.rows; i++)
+    {
+        for(int j = 0; j < this->img.cols; j++)
+        {
+            for(int k = 0; k < this->img.channels(); k++)
+            {
+                this->img_invert.at<cv::Vec3b>(i, j)[k] = 255 - this->img.at<cv::Vec3b>(i, j)[k];
+            }
+        }
+    }
+    this->realTimechanged = false;
+    this->graychanged = false;
+    this->constrastChanged = false;
+    this->invertChanged = true;
+    this->showImage(img_invert);
+}
+
+void MainWindow::on_actionSave_image_triggered()
+{
+//    QString folder = QFileDialog::getExistingDirectory();
+//    QString path = folder + "/saved_image.png";
+//    std::string std_path = path.toStdString();
+//    qDebug() << path;
+//    if(this->realTimechanged == true)
+//        cv::imwrite(std_path, this->real_time_img);
+//    else if(this->graychanged == true)
+//        cv::imwrite(std_path, this->imgGray);
+//    else if(this->constrastChanged == true)
+//        cv::imwrite(std_path, this->img_Constrat);
+//    else if(this->invertChanged == true)
+//        cv::imwrite(std_path, this->img_invert);
+    cv::Mat img = this->real_time_img.clone();
+    cv::imwrite("saved image.jpg", img);
+    cvSaveImage("saved_image.png", img);
+}
+
+void MainWindow::save_image()
+{
+    if(saveImageOrNot == true)
+    {
+        this->tmp = this->real_time_img.clone();
+        saveImageOrNot = false;
+        qDebug() << "save image";
     }
     else
-    {
-        cv::Mat dst(tmp_1Ch);
-        for(int i = 0; i < tmp_1Ch.rows -2; i++)
-        {
-            for(int j = 0; j < tmp_1Ch.cols -2; j++)
-            {
-                tmp_1Ch.at<uchar>(i, j) = (tmp.at<cv::Vec3b>(i, j)[0] + tmp.at<cv::Vec3b>(i, j)[1] +　tmp.at<cv::Vec3b>(i, j)[2])/3;
-                for(int k = 0; k < tmp.channels(); k++)
-                {
-                    dst.at<uchar>(i + 1, j + 1) = (tmp_1Ch.at<uchar>(i, j) +
-                                                   tmp_1Ch.at<uchar>(i, j + 1) +
-                                                   tmp_1Ch.at<uchar>(i, j + 2) +
-                                                   tmp_1Ch.at<uchar>(i + 1, j) +
-                                                   tmp_1Ch.at<uchar>(i + 1, j + 1) +
-                                                   tmp_1Ch.at<uchar>(i + 1, j + 2) +
-                                                   tmp_1Ch.at<uchar>(i + 2, j) +
-                                                   tmp_1Ch.at<uchar>(i + 2, j + 1) +
-                                                   tmp_1Ch.at<uchar>(i +2, j + 2))/9;
-                }
-            }
-        }
-        this->showImage(dst);
-    }
-
+        saveImageOrNot = true;
 }

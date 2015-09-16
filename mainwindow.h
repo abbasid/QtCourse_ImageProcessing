@@ -8,7 +8,8 @@
 #include <QDebug>
 #include <opencv.hpp>
 #include <QVector>
-
+#include <QTimer>
+#include <string>
 
 
 namespace Ui {
@@ -40,16 +41,31 @@ private slots:
 
     void on_blur_clicked();
 
+    void on_contrast_valueChanged(int value);
+
+    void on_invert_clicked();
+
+    void on_actionSave_image_triggered();
+
+    void save_image();
+
 private:
     Ui::MainWindow *ui;
     cv::Mat img;
     QImage Mat2QImage(const cv::Mat &src);
     void showImage(const cv::Mat &src);
     void changeColorTemp(cv::Mat &src, cv::Mat &tmp, QVector<int> color);
+    cv::Mat real_time_img;
+    cv::Mat imgGray;
+    cv::Mat img_Constrat;
+    cv::Mat img_invert;
     cv::Mat tmp;
-    cv::Mat tmp_1Ch;
-    bool grayscaleisclicked;
-
+    QTimer *clock;
+    bool saveImageOrNot;
+    bool realTimechanged;
+    bool graychanged;
+    bool constrastChanged;
+    bool invertChanged;
 };
 
 #endif // MAINWINDOW_H
