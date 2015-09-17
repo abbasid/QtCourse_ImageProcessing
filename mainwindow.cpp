@@ -257,21 +257,19 @@ void MainWindow::on_invert_clicked()
 
 void MainWindow::on_actionSave_image_triggered()
 {
-//    QString folder = QFileDialog::getExistingDirectory();
-//    QString path = folder + "/saved_image.png";
-//    std::string std_path = path.toStdString();
-//    qDebug() << path;
-//    if(this->realTimechanged == true)
-//        cv::imwrite(std_path, this->real_time_img);
-//    else if(this->graychanged == true)
-//        cv::imwrite(std_path, this->imgGray);
-//    else if(this->constrastChanged == true)
-//        cv::imwrite(std_path, this->img_Constrat);
-//    else if(this->invertChanged == true)
-//        cv::imwrite(std_path, this->img_invert);
-    cv::Mat img = this->real_time_img.clone();
-    cv::imwrite("saved image.jpg", img);
-    cvSaveImage("saved_image.png", img);
+    QString folder = QFileDialog::getSaveFileName(this, tr("save_image"), "saved_image.bmp", tr("Image(*,bmp)"));
+    QString path = folder + "/";
+    std::string std_path = folder.toStdString();
+    if(this->realTimechanged == true)
+        cv::imwrite(std_path, this->real_time_img);
+    else if(this->graychanged == true)
+        cv::imwrite(std_path, this->imgGray);
+    else if(this->constrastChanged == true)
+        cv::imwrite(std_path, this->img_Constrat);
+    else if(this->invertChanged == true)
+        cv::imwrite(std_path, this->img_invert);
+    else
+        qDebug() << "Please try to modify your image before saving it.";
 }
 
 void MainWindow::save_image()
